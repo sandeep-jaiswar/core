@@ -192,7 +192,7 @@ public class JwtService {
         }
 
         // JWT should have 3 parts separated by dots
-        String[] parts = token.split("\.");
+        String[] parts = token.split("\\.");
         return parts.length == 3;
     }
 

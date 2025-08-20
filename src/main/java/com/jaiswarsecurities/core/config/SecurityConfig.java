@@ -1,6 +1,7 @@
 package com.jaiswarsecurities.core.config;
 
 import com.jaiswarsecurities.core.security.JwtAuthenticationFilter;
+import com.jaiswarsecurities.core.service.JwtService;
 import com.jaiswarsecurities.core.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -34,8 +35,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter();
-    private final UserService userService = new UserService();
+    private final JwtAuthenticationFilter jwtAuthFilter;
+    private final UserService userService;
 
     /**
      * Configure security filter chain

@@ -24,5 +24,6 @@ public class LoginRequest {
     @Size(min = 1, max = 128, message = "Password is required")
     private String password;
 
+    @Builder.Default // Added to address the warning
     private boolean rememberMe = false;
 }

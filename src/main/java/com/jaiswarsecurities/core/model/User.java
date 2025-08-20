@@ -57,6 +57,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private UserStatus status;
 
+    @Builder.Default
     @Column(name = "email_verified")
     private boolean emailVerified = false;
 
@@ -72,6 +73,7 @@ public class User implements UserDetails {
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
+    @Builder.Default
     @Column(name = "failed_login_attempts")
     private int failedLoginAttempts = 0;
 

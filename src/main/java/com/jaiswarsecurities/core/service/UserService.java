@@ -18,6 +18,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -187,5 +189,19 @@ public class UserService implements UserDetailsService {
         userRepository.save(user);
 
         log.info("Account unlocked successfully for user: {}", user.getUsername());
+    }
+
+    /**
+     * Get locked accounts
+     */
+    public List<User> getLockedAccounts() {
+        return userRepository.findLockedAccounts();
+    }
+
+    /**
+     * Count users registered today
+     */
+    public long countUsersRegisteredToday() {
+        return userRepository.countUsersRegisteredToday();
     }
 }
