@@ -12,6 +12,7 @@
     # pkgs.nodejs_20
     # pkgs.nodePackages.nodemon
     pkgs.gradle
+    pkgs.jdk21
   ];
 
   # Sets environment variables in the workspace
