@@ -12,6 +12,8 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
     }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 configurations {
@@ -62,6 +64,7 @@ dependencies {
     // Utility Libraries
     implementation 'org.modelmapper:modelmapper:3.2.0'  // Added version
     compileOnly 'org.projectlombok:lombok'
+    implementation 'org.projectlombok:lombok'
 
     // Development
     developmentOnly 'org.springframework.boot:spring-boot-devtools'

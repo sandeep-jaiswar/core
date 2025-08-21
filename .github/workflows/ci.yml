@@ -1,17 +1,6 @@
 # .github/workflows/ci.yml
 name: CI Pipeline
 
-on:
-  push:
-    branches:
-      - main
-      - develop
-      - 'feature/**'
-  pull_request:
-    branches:
-      - main
-      - develop
-
 jobs:
   build-and-test:
     name: Build & Test (Gradle Java 21)
