@@ -1,14 +1,15 @@
 package com.jaiswarsecurities.core.dto.auth;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jaiswarsecurities.core.model.Role;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Authentication response DTO containing user info and tokens

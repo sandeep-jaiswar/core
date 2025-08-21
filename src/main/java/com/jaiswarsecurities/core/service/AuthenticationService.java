@@ -1,15 +1,10 @@
 package com.jaiswarsecurities.core.service;
 
-import com.jaiswarsecurities.core.dto.auth.*;
-import com.jaiswarsecurities.core.exception.AuthenticationException;
-import com.jaiswarsecurities.core.exception.UserAlreadyExistsException;
-import com.jaiswarsecurities.core.exception.UserNotFoundException;
-import com.jaiswarsecurities.core.model.Role;
-import com.jaiswarsecurities.core.model.User;
-import com.jaiswarsecurities.core.model.UserStatus;
-import com.jaiswarsecurities.core.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,12 +15,22 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import com.jaiswarsecurities.core.dto.auth.AuthResponse;
+import com.jaiswarsecurities.core.dto.auth.LoginRequest;
+import com.jaiswarsecurities.core.dto.auth.PasswordResetRequest;
+import com.jaiswarsecurities.core.dto.auth.RegisterRequest;
+import com.jaiswarsecurities.core.dto.auth.UserProfileDto;
+import com.jaiswarsecurities.core.exception.AuthenticationException;
+import com.jaiswarsecurities.core.exception.UserAlreadyExistsException;
+import com.jaiswarsecurities.core.exception.UserNotFoundException;
+import com.jaiswarsecurities.core.model.Role;
+import com.jaiswarsecurities.core.model.User;
+import com.jaiswarsecurities.core.model.UserStatus;
+import com.jaiswarsecurities.core.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Authentication service handling user registration, login, and token management

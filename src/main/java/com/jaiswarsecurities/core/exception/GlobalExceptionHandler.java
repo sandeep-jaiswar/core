@@ -1,7 +1,11 @@
 package com.jaiswarsecurities.core.exception;
 
-import com.jaiswarsecurities.core.dto.auth.AuthResponse;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,9 +16,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import com.jaiswarsecurities.core.dto.auth.AuthResponse;
+import com.jaiswarsecurities.core.service.JwtService;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Global exception handler for the application
@@ -22,6 +27,7 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+	private static final Logger log = LoggerFactory.getLogger(JwtService.class);
 
     /**
      * Handle validation errors
