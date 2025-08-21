@@ -33,12 +33,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
- @Service
- @RequiredArgsConstructor
- @Slf4j
- public class AuthenticationService {
-     // ...
- }
+public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -118,7 +113,11 @@ import java.util.UUID;
             User user = userRepository.findByUsernameOrEmail(request.getUsernameOrEmail())
                     .orElseThrow(() -> new UserNotFoundException("User not found: " + request.getUsernameOrEmail()));
 
-            // Check if account is locked
+            // Check if email is verified
+            if (!user.isEmailVerified()) {
+                throw new AuthenticationException("Account is not verified. Please check your email to verify your account.");
+            }
+
             // Authenticate user
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -131,14 +130,6 @@ import java.util.UUID;
             if (user.isAccountLocked()) {
                 throw new LockedException("Account is locked due to multiple failed login attempts. Please try again later.");
             }
-
-            // Authenticate user
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getUsernameOrEmail(),
-                            request.getPassword()
-                    )
-            );
 
             // Reset failed attempts on successful login
             if (user.getFailedLoginAttempts() > 0) {
@@ -282,7 +273,10 @@ import java.util.UUID;
 
         log.info("Password reset email sent to: {}", request.getEmail());
 
-        return AuthResponse.success("Password reset email sent. Please check your email.");
+        return AuthResponse.builder()
+               .success(true)
+               .message("Password reset email sent. Please check your email.")
+               .build();
     }
 
     /**
@@ -295,9 +289,8 @@ import java.util.UUID;
                 .orElseThrow(() -> new AuthenticationException("Invalid or expired password reset token"));
 
         // Check if token is expired
-        // Check if token is expired
-        if (user.getPasswordResetExpires() == null 
-            || user.getPasswordResetExpires().isBefore(LocalDateTime.now())) {
+        if (user.getPasswordResetExpires() == null
+                || user.getPasswordResetExpires().isBefore(LocalDateTime.now())) {
             throw new AuthenticationException("Password reset token has expired");
         }
 
@@ -309,7 +302,10 @@ import java.util.UUID;
 
         log.info("Password reset successfully for user: {}", user.getUsername());
 
-        return AuthResponse.success("Password reset successfully");
+        return AuthResponse.builder()
+               .success(true)
+               .message("Password reset successfully")
+               .build();
     }
 
     /**
@@ -338,7 +334,7 @@ import java.util.UUID;
 
                     if (user.getFailedLoginAttempts() >= MAX_FAILED_ATTEMPTS) {
                         user.lockAccount(ACCOUNT_LOCK_DURATION_MINUTES);
-                        log.warn("Account locked for user: {} due to {} failed attempts", 
+                        log.warn("Account locked for user: {} due to {} failed attempts",
                                 user.getUsername(), user.getFailedLoginAttempts());
                     }
 
