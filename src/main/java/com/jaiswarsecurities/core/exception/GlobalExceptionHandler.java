@@ -16,7 +16,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.jaiswarsecurities.core.dto.auth.AuthResponse;
 import com.jaiswarsecurities.core.service.JwtService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
-	private static final Logger log = LoggerFactory.getLogger(JwtService.class);
 
     /**
      * Handle validation errors

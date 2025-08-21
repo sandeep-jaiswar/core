@@ -3,8 +3,6 @@ package com.jaiswarsecurities.core.config;
 import java.util.Arrays;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,7 +24,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.jaiswarsecurities.core.security.JwtAuthenticationFilter;
-import com.jaiswarsecurities.core.service.JwtService;
 import com.jaiswarsecurities.core.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -43,8 +40,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserService userService;
 
-    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
-    
     /**
      * Configure security filter chain
      */
@@ -93,17 +88,19 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
             // Configure headers (UPDATED - no more frameOptions() deprecation)
-            .headers(headers -> headers
-                // For H2 console support in development
-                .frameOptions(frameOptions -> frameOptions.sameOrigin())
+            .headers(headers -> {
+                headers.frameOptions(frameOptions -> frameOptions.sameOrigin());
                 // Add security headers
-                .contentTypeOptions(contentTypeOptions -> contentTypeOptions.and())
-                .httpStrictTransportSecurity(hsts -> hsts
+                headers.contentTypeOptions(contentTypeOptions -> {});
+                headers.httpStrictTransportSecurity(hsts -> hsts
                     .maxAgeInSeconds(31536000)
                     .includeSubDomains(true)
-                )
-                .referrerPolicy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
-            );
+                );
+                headers.referrerPolicy(referrerPolicy ->
+                    referrerPolicy.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
+                );
+            })
+        ;
 
         return http.build();
     }

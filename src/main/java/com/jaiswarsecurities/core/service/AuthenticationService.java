@@ -255,7 +255,10 @@ public class AuthenticationService {
 
         log.info("Email verified successfully for user: {}", user.getUsername());
 
-        return AuthResponse.success("Email verified successfully. Your account is now active.");
+        return AuthResponse.builder()
+          .success(true)
+          .message("Email verified successfully. Your account is now active.")
+          .build();
     }
 
     /**
