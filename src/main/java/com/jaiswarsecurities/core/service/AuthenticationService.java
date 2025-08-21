@@ -33,8 +33,12 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Transactional
-public class AuthenticationService {
+ @Service
+ @RequiredArgsConstructor
+ @Slf4j
+ public class AuthenticationService {
+     // ...
+ }
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -115,6 +119,15 @@ public class AuthenticationService {
                     .orElseThrow(() -> new UserNotFoundException("User not found: " + request.getUsernameOrEmail()));
 
             // Check if account is locked
+            // Authenticate user
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getUsernameOrEmail(),
+                            request.getPassword()
+                    )
+            );
+
+            // Check if account is locked after successful authentication
             if (user.isAccountLocked()) {
                 throw new LockedException("Account is locked due to multiple failed login attempts. Please try again later.");
             }
@@ -282,7 +295,9 @@ public class AuthenticationService {
                 .orElseThrow(() -> new AuthenticationException("Invalid or expired password reset token"));
 
         // Check if token is expired
-        if (user.getPasswordResetExpires().isBefore(LocalDateTime.now())) {
+        // Check if token is expired
+        if (user.getPasswordResetExpires() == null 
+            || user.getPasswordResetExpires().isBefore(LocalDateTime.now())) {
             throw new AuthenticationException("Password reset token has expired");
         }
 
