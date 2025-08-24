@@ -1,51 +1,126 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.4'
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.5.4'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'com.jaiswarsecurities'
 version = '0.0.1-SNAPSHOT'
-description = 'Project for Spring Boot'
+description = 'High-Performance Trading Core System'
 
 java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
 }
 
 ext {
-	set('springCloudVersion', "2025.0.0")
+    springCloudVersion = '2025.0.0'
+    jjwtVersion = '0.12.5'
+    testcontainersVersion = '1.19.7'
+    lombokVersion = '1.18.38'
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // Core Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Database
+    implementation 'org.postgresql:postgresql:42.7.3'
+    implementation 'com.clickhouse:clickhouse-jdbc:0.9.1' // dev/prod
+    implementation 'com.zaxxer:HikariCP:5.1.0'
+
+    // JWT
+    implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
+
+    // Mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // Caching
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+
+    // API Docs
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+
+    // Utils
+    implementation 'org.modelmapper:modelmapper:3.2.0'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.retry:spring-retry'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.springframework.data:spring-data-commons'
+
+    // Dev
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // Resilience
+    implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
+
+    // Testing
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 dependencyManagement {
-	imports {
-		mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
-	}
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+// JVM Performance Optimizations for Trading System (ADDED)
+tasks.bootRun {
+    jvmArgs = [
+        '-XX:+UseZGC',
+        '-XX:+UseTransparentHugePages', 
+        '-XX:+AlwaysPreTouch',
+        '-Xms4g',
+        '-Xmx4g',
+        '-XX:MaxDirectMemorySize=2g',
+        '-XX:+FlightRecorder',
+        '-XX:StartFlightRecording=duration=60s,filename=trading-profile.jfr'
+    ]
+}
+
+// Custom Development Tasks (ADDED)
+tasks.register('generateApiDocs') {
+    description = 'Generate API documentation'
+    group = 'documentation'
+
+    doLast {
+        println 'API documentation available at: http://localhost:8080/swagger-ui.html'
+        println 'OpenAPI spec available at: http://localhost:8080/v3/api-docs'
+    }
+}
+
+bootRun {
+    args = ["--spring.profiles.active=${project.findProperty("springProfile") ?: "dev"}"]
 }
