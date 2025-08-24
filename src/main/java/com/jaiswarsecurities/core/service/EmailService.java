@@ -1,169 +1,108 @@
 package com.jaiswarsecurities.core.service;
 
-import com.jaiswarsecurities.core.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
-/**
- * Email service for sending various types of emails
- */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final JavaMailSender emailSender;
+    
+    @Value("${spring.mail.from:noreply@jaiswarsecurities.com}")
+    private String fromAddress;
+    
+    @Value("${app.frontend.url:http://localhost:3000}")
+    private String frontendUrl;
 
-    @Value("${application.mail.from}")
-    private String fromEmail;
-
-    @Value("${application.mail.verification-url}")
-    private String verificationUrl;
-
-    @Value("${application.mail.reset-password-url}")
-    private String resetPasswordUrl;
-
-    /**
-     * Send email verification email
-     */
     @Async
-    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public void sendVerificationEmail(User user) {
+    public void sendEmailVerification(String toEmail, String token) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(user.getEmail());
-            message.setSubject("Verify Your Email - Trading Platform");
-
-            String verificationLink = verificationUrl + "?token=" + user.getEmailVerificationToken();
-            String text = String.format(
-                "Hello %s,\n\n" +
-                "Thank you for registering with our Trading Platform!\n\n" +
-                "Please click the link below to verify your email address:\n" +
-                "%s\n\n" +
+            message.setFrom(fromAddress);
+            message.setTo(toEmail);
+            message.setSubject("Email Verification - Jaiswar Securities");
+            message.setText(String.format(
+                "Welcome to Jaiswar Securities!\n\n" +
+                "Please verify your email address by clicking the link below:\n" +
+                "%s/verify-email?token=%s\n\n" +
                 "This link will expire in 24 hours.\n\n" +
-                "If you didn't create this account, please ignore this email.\n\n" +
+                "If you didn't create an account with us, please ignore this email.\n\n" +
                 "Best regards,\n" +
-                "Trading Platform Team",
-                user.getFirstName() != null ? user.getFirstName() : user.getUsername(),
-                verificationLink
-            );
-
-            message.setText(text);
-            mailSender.send(message);
-
-            log.info("Verification email sent to: {}", user.getEmail());
+                "Jaiswar Securities Team",
+                frontendUrl, token
+            ));
+            
+            emailSender.send(message);
+            log.info("Verification email sent to: {}", toEmail);
+            
         } catch (Exception e) {
-            log.error("Failed to send verification email to: {}", user.getEmail(), e);
-            throw e; // Re-throw the exception to trigger retry
+            log.error("Failed to send verification email to {}: {}", toEmail, e.getMessage());
         }
     }
 
-    /**
-     * Send password reset email
-     */
     @Async
-    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public void sendPasswordResetEmail(User user, String resetToken) {
+    public void sendPasswordResetEmail(String toEmail, String token) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(user.getEmail());
-            message.setSubject("Password Reset - Trading Platform");
-
-            String resetLink = resetPasswordUrl + "?token=" + resetToken;
-            String text = String.format(
-                "Hello %s,\n\n" +
-                "We received a request to reset your password for your Trading Platform account.\n\n" +
-                "Please click the link below to reset your password:\n" +
-                "%s\n\n" +
+            message.setFrom(fromAddress);
+            message.setTo(toEmail);
+            message.setSubject("Password Reset - Jaiswar Securities");
+            message.setText(String.format(
+                "Hello,\n\n" +
+                "We received a request to reset your password for your Jaiswar Securities account.\n\n" +
+                "Click the link below to reset your password:\n" +
+                "%s/reset-password?token=%s\n\n" +
                 "This link will expire in 1 hour.\n\n" +
-                "If you didn't request this password reset, please ignore this email.\n\n" +
+                "If you didn't request a password reset, please ignore this email.\n\n" +
                 "Best regards,\n" +
-                "Trading Platform Team",
-                user.getFirstName() != null ? user.getFirstName() : user.getUsername(),
-                resetLink
-            );
-
-            message.setText(text);
-            mailSender.send(message);
-
-            log.info("Password reset email sent to: {}", user.getEmail());
+                "Jaiswar Securities Team",
+                frontendUrl, token
+            ));
+            
+            emailSender.send(message);
+            log.info("Password reset email sent to: {}", toEmail);
+            
         } catch (Exception e) {
-            log.error("Failed to send password reset email to: {}", user.getEmail(), e);
-            throw e; // Re-throw the exception to trigger retry
+            log.error("Failed to send password reset email to {}: {}", toEmail, e.getMessage());
         }
     }
 
-    /**
-     * Send welcome email after successful verification
-     */
     @Async
-    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public void sendWelcomeEmail(User user) {
+    public void sendTradeConfirmationEmail(String toEmail, String tradingAccountNumber, 
+                                         String symbol, String tradeType, int quantity, 
+                                         String price, String totalAmount) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(user.getEmail());
-            message.setSubject("Welcome to Trading Platform!");
-
-            String text = String.format(
-                "Hello %s,\n\n" +
-                "Welcome to our Trading Platform! Your email has been successfully verified.\n\n" +
-                "You can now start trading and managing your portfolio.\n\n" +
-                "If you have any questions, please don't hesitate to contact our support team.\n\n" +
-                "Happy trading!\n\n" +
+            message.setFrom(fromAddress);
+            message.setTo(toEmail);
+            message.setSubject("Trade Confirmation - Jaiswar Securities");
+            message.setText(String.format(
+                "Trade Confirmation\n\n" +
+                "Account: %s\n" +
+                "Symbol: %s\n" +
+                "Action: %s\n" +
+                "Quantity: %d\n" +
+                "Price: ₹%s\n" +
+                "Total Amount: ₹%s\n\n" +
+                "Your trade has been successfully executed.\n\n" +
+                "You can view your portfolio and trading history by logging into your account.\n\n" +
                 "Best regards,\n" +
-                "Trading Platform Team",
-                user.getFullName()
-            );
-
-            message.setText(text);
-            mailSender.send(message);
-
-            log.info("Welcome email sent to: {}", user.getEmail());
+                "Jaiswar Securities Team",
+                tradingAccountNumber, symbol, tradeType, quantity, price, totalAmount
+            ));
+            
+            emailSender.send(message);
+            log.info("Trade confirmation email sent to: {}", toEmail);
+            
         } catch (Exception e) {
-            log.error("Failed to send welcome email to: {}", user.getEmail(), e);
-            throw e; // Re-throw the exception to trigger retry
-        }
-    }
-
-    /**
-     * Send account locked notification
-     */
-    @Async
-    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
-    public void sendAccountLockedEmail(User user) {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromEmail);
-            message.setTo(user.getEmail());
-            message.setSubject("Account Locked - Trading Platform");
-
-            String text = String.format(
-                "Hello %s,\n\n" +
-                "Your Trading Platform account has been temporarily locked due to multiple failed login attempts.\n\n" +
-                "For security reasons, your account will be automatically unlocked in 30 minutes.\n\n" +
-                "If this wasn't you, please contact our support team immediately.\n\n" +
-                "Best regards,\n" +
-                "Trading Platform Security Team",
-                user.getFullName()
-            );
-
-            message.setText(text);
-            mailSender.send(message);
-
-            log.info("Account locked notification sent to: {}", user.getEmail());
-        } catch (Exception e) {
-            log.error("Failed to send account locked email to: {}", user.getEmail(), e);
-            throw e; // Re-throw the exception to trigger retry
+            log.error("Failed to send trade confirmation email to {}: {}", toEmail, e.getMessage());
         }
     }
 }

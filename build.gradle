@@ -30,7 +30,7 @@ repositories {
 }
 
 ext {
-    set('springCloudVersion', "2025.0.0")
+    springCloudVersion = '2025.0.0'
     jjwtVersion = '0.12.5'
     testcontainersVersion = '1.19.7'
     lombokVersion = '1.18.38'
@@ -42,9 +42,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     // Database
-    testRuntimeOnly 'com.h2database:h2' // test only
     implementation 'org.postgresql:postgresql:42.7.3'
     implementation 'com.clickhouse:clickhouse-jdbc:0.9.1' // dev/prod
     implementation 'com.zaxxer:HikariCP:5.1.0'
@@ -67,7 +68,9 @@ dependencies {
     implementation 'org.modelmapper:modelmapper:3.2.0'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.retry:spring-retry'
     annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.springframework.data:spring-data-commons'
 
     // Dev
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -80,7 +83,6 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
     testImplementation 'org.testcontainers:junit-jupiter'
-    testImplementation 'org.testcontainers:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -116,18 +118,6 @@ tasks.register('generateApiDocs') {
     doLast {
         println 'API documentation available at: http://localhost:8080/swagger-ui.html'
         println 'OpenAPI spec available at: http://localhost:8080/v3/api-docs'
-    }
-}
-
-tasks.register('setupDatabase') {
-    description = 'Setup development database'
-    group = 'database'
-
-    doLast {
-        println 'H2 Console available at: http://localhost:8080/h2-console'
-        println 'JDBC URL: jdbc:h2:mem:trading_db'
-        println 'Username: sa'
-        println 'Password: password'
     }
 }
 
