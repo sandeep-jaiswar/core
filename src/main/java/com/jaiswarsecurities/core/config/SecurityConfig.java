@@ -38,7 +38,6 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final UserService userService;
 
     /**
      * Configure security filter chain
@@ -82,15 +81,14 @@ public class SecurityConfig {
             )
 
             // Add JWT authentication provider
-            .authenticationProvider(authenticationProvider())
+            .authenticationProvider(authenticationProvider(null)) // Spring will inject UserService
 
             // Add JWT filter before UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
 
-            // Configure headers (UPDATED - no more frameOptions() deprecation)
+            // Configure headers
             .headers(headers -> {
                 headers.frameOptions(frameOptions -> frameOptions.sameOrigin());
-                // Add security headers
                 headers.contentTypeOptions(contentTypeOptions -> {});
                 headers.httpStrictTransportSecurity(hsts -> hsts
                     .maxAgeInSeconds(31536000)
@@ -99,8 +97,7 @@ public class SecurityConfig {
                 headers.referrerPolicy(referrerPolicy ->
                     referrerPolicy.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)
                 );
-            })
-        ;
+            });
 
         return http.build();
     }
@@ -111,20 +108,10 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // Allow specific origins (configure for production)
         configuration.setAllowedOriginPatterns(List.of("*"));
-
-        // Allow all HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
-
-        // Allow all headers
         configuration.setAllowedHeaders(List.of("*"));
-
-        // Allow credentials
         configuration.setAllowCredentials(true);
-
-        // Expose Authorization header
         configuration.setExposedHeaders(List.of("Authorization"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -138,14 +125,14 @@ public class SecurityConfig {
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(12); // Strength 12 for good security
+        return new BCryptPasswordEncoder(12);
     }
 
     /**
      * Configure authentication provider
      */
     @Bean
-    public AuthenticationProvider authenticationProvider() {
+    public AuthenticationProvider authenticationProvider(UserService userService) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userService);
         authProvider.setPasswordEncoder(passwordEncoder());

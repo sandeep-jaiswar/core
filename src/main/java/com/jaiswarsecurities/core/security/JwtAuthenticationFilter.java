@@ -2,16 +2,15 @@ package com.jaiswarsecurities.core.security;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.security.core.Authentication;
 
 import com.jaiswarsecurities.core.service.JwtService;
 import com.jaiswarsecurities.core.service.UserService;
@@ -22,19 +21,22 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * JWT Authentication Filter that intercepts requests and validates JWT tokens
  */
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserService userService;
+
+    public JwtAuthenticationFilter(JwtService jwtService, @Lazy UserService userService) {
+        this.jwtService = jwtService;
+        this.userService = userService;
+    }
 
     private static final String HEADER_NAME = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer ";

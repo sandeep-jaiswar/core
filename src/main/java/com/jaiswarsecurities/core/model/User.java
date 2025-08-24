@@ -13,8 +13,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -25,8 +23,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * User entity implementing Spring Security UserDetails
- * for authentication and authorization
+ * User entity adapted for ClickHouse
  */
 @Data
 @Builder
@@ -37,7 +34,7 @@ import lombok.NoArgsConstructor;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "UUID")
     private UUID id;
 
     @Column(unique = true, nullable = false, length = 50)
@@ -67,7 +64,7 @@ public class User implements UserDetails {
     private UserStatus status;
 
     @Builder.Default
-    @Column(name = "email_verified")
+    @Column(name = "email_verified", columnDefinition = "UInt8")
     private boolean emailVerified = false;
 
     @Column(name = "email_verification_token")
@@ -76,27 +73,30 @@ public class User implements UserDetails {
     @Column(name = "password_reset_token")
     private String passwordResetToken;
 
-    @Column(name = "password_reset_expires")
+    @Column(name = "password_reset_expires", columnDefinition = "DateTime64(3)")
     private LocalDateTime passwordResetExpires;
 
-    @Column(name = "last_login")
+    @Column(name = "last_login", columnDefinition = "DateTime64(3)")
     private LocalDateTime lastLogin;
 
     @Builder.Default
     @Column(name = "failed_login_attempts")
     private int failedLoginAttempts = 0;
 
-    @Column(name = "account_locked_until")
+    @Column(name = "account_locked_until", columnDefinition = "DateTime64(3)")
     private LocalDateTime accountLockedUntil;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "DateTime64(3)")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
+    @Column(name = "updated_at", columnDefinition = "DateTime64(3)")
     private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (status == null) {
@@ -112,7 +112,7 @@ public class User implements UserDetails {
         updatedAt = LocalDateTime.now();
     }
 
-    // UserDetails implementation methods
+    // UserDetails implementation
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));

@@ -37,49 +37,50 @@ ext {
 }
 
 dependencies {
-    // Core Spring Boot Starters (your existing ones)
+    // Core Spring Boot
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // Database Dependencies (ADDED)
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa' // Changed to starter
-    runtimeOnly 'com.h2database:h2'
-    runtimeOnly 'org.postgresql:postgresql'
+    // Database
+    testRuntimeOnly 'com.h2database:h2' // test only
+    implementation 'org.postgresql:postgresql:42.7.3'
+	implementation 'com.clickhouse:clickhouse-jdbc:0.9.1' // dev/prod
 
-    // JWT Dependencies (ADDED - Critical for Authentication)
+    // JWT
     implementation "io.jsonwebtoken:jjwt-api:${jjwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-impl:${jjwtVersion}"
     runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jjwtVersion}"
 
-    // Email Service (ADDED)
+    // Mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
-    // Caching Support (ADDED)
+    // Caching
     implementation 'org.springframework.boot:spring-boot-starter-cache'
 
-    // API Documentation (ADDED)
+    // API Docs
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
 
-    // Utility Libraries
-    implementation 'org.modelmapper:modelmapper:3.2.0'  // Added version
+    // Utils
+    implementation 'org.modelmapper:modelmapper:3.2.0'
     compileOnly 'org.projectlombok:lombok'
-
-    // Development
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
 
-    // Your existing Spring Cloud dependency
+    // Dev
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+
+    // Resilience
     implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-resilience4j'
 
-    // Testing Dependencies
+    // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'  // ADDED
-    testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")  // ADDED
-    testImplementation 'org.testcontainers:junit-jupiter'  // ADDED
-    testImplementation 'org.testcontainers:postgresql'  // ADDED
+    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation platform("org.testcontainers:testcontainers-bom:${testcontainersVersion}")
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -130,9 +131,6 @@ tasks.register('setupDatabase') {
     }
 }
 
-// Development profile support (ADDED)
-if (project.hasProperty('dev')) {
-    bootRun {
-        args = ['--spring.profiles.active=dev']
-    }
+bootRun {
+    args = ["--spring.profiles.active=${project.findProperty("springProfile") ?: "dev"}"]
 }

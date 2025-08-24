@@ -141,7 +141,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     /**
      * Count users registered today
      */
-    @Query("SELECT COUNT(u) FROM User u WHERE DATE(u.createdAt) = CURRENT_DATE")
+    @Query(value = "SELECT COUNT(*) FROM users u WHERE toDate(u.created_at) = today()", nativeQuery = true)
     long countUsersRegisteredToday();
 
     /**
