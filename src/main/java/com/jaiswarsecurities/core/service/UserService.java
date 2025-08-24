@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,9 +20,14 @@ import com.jaiswarsecurities.core.exception.AuthenticationException;
 import com.jaiswarsecurities.core.exception.UserNotFoundException;
 import com.jaiswarsecurities.core.model.User;
 import com.jaiswarsecurities.core.repository.UserRepository;
+import com.jaiswarsecurities.core.dao.UserDao;
+import com.jaiswarsecurities.core.service.TradeService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.LocalDateTime;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * User service implementing UserDetailsService for Spring Security integration
@@ -35,6 +41,10 @@ public class UserService implements UserDetailsService {
 	private final UserRepository userRepository;
 	private final PasswordEncoder passwordEncoder;
 	private final ModelMapper modelMapper;
+    @Autowired
+    private UserDao userDao;
+    @Autowired
+    private TradeService tradeService;
 
 	/**
 	 * Load user by username for Spring Security
@@ -43,8 +53,13 @@ public class UserService implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		log.debug("Loading user by username: {}", username);
 
-		return userRepository.findByUsernameOrEmail(username)
-				.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+		//return userRepository.findByUsernameOrEmail(username)
+		//		.orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+        User user = userDao.getUserByUsername(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found: " + username);
+        }
+        return user;
 	}
 
 	/**
@@ -205,4 +220,25 @@ public class UserService implements UserDetailsService {
 	public long countUsersRegisteredToday() {
 		return userRepository.countUsersRegisteredToday();
 	}
+
+    public void insertTradeData(LocalDateTime timestamp, String symbol, double price, long quantity) {
+        tradeService.insertTradeAsync(timestamp, symbol, price, quantity);
+    }
+
+    public void insertUser(User user) {
+        userDao.insertUser(user);
+    }
+
+    public User getUserByEmail(String email) {
+        return userDao.getUserByEmail(email);
+    }
+
+    public void migrateUsersToClickHouse() {
+        List<User> users = userRepository.findAll();
+        users.forEach(user -> userDao.insertUser(user));
+    }
+
+    public void batchInsertTrades(List<Object[]> trades) {
+        tradeService.batchInsertTrades(trades);
+    }
 }

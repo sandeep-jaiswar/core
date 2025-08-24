@@ -4,12 +4,14 @@ import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.retry.annotation.EnableRetry;
 
 /**
  * Application configuration beans
  */
 @Configuration
 @EnableAsync
+@EnableRetry
 public class ApplicationConfig {
 
     /**

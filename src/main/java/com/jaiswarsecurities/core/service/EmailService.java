@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
 /**
@@ -32,6 +34,7 @@ public class EmailService {
      * Send email verification email
      */
     @Async
+    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public void sendVerificationEmail(User user) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -59,6 +62,7 @@ public class EmailService {
             log.info("Verification email sent to: {}", user.getEmail());
         } catch (Exception e) {
             log.error("Failed to send verification email to: {}", user.getEmail(), e);
+            throw e; // Re-throw the exception to trigger retry
         }
     }
 
@@ -66,6 +70,7 @@ public class EmailService {
      * Send password reset email
      */
     @Async
+    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public void sendPasswordResetEmail(User user, String resetToken) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -93,6 +98,7 @@ public class EmailService {
             log.info("Password reset email sent to: {}", user.getEmail());
         } catch (Exception e) {
             log.error("Failed to send password reset email to: {}", user.getEmail(), e);
+            throw e; // Re-throw the exception to trigger retry
         }
     }
 
@@ -100,6 +106,7 @@ public class EmailService {
      * Send welcome email after successful verification
      */
     @Async
+    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public void sendWelcomeEmail(User user) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -124,6 +131,7 @@ public class EmailService {
             log.info("Welcome email sent to: {}", user.getEmail());
         } catch (Exception e) {
             log.error("Failed to send welcome email to: {}", user.getEmail(), e);
+            throw e; // Re-throw the exception to trigger retry
         }
     }
 
@@ -131,6 +139,7 @@ public class EmailService {
      * Send account locked notification
      */
     @Async
+    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1000))
     public void sendAccountLockedEmail(User user) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
@@ -154,6 +163,7 @@ public class EmailService {
             log.info("Account locked notification sent to: {}", user.getEmail());
         } catch (Exception e) {
             log.error("Failed to send account locked email to: {}", user.getEmail(), e);
+            throw e; // Re-throw the exception to trigger retry
         }
     }
 }
